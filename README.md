@@ -56,5 +56,3 @@ Built to showcase:
 **Role:** AI Automation Engineer / GenAI Developer
 
 ---
-
-Just tell me.
