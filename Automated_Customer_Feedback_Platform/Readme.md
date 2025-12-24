@@ -9,10 +9,15 @@ This workflow eliminates manual effort in customer support while ensuring fast, 
 ## 🚀 What This Automation Does
 
 ✔️ Monitors customer feedback emails in real time
+
 ✔️ Uses AI to **draft a calm, professional response**
+
 ✔️ Automatically **categorizes customer issues**
+
 ✔️ Sends the AI-generated reply back to the customer
+
 ✔️ Logs feedback + response into Google Sheets
+
 ✔️ Runs continuously with zero manual intervention
 
 In short: **Inbox → AI Brain → Action → Record → Done.**
@@ -116,7 +121,6 @@ This makes it easy to build dashboards later for:
 5. Sit back and let automation cook 🔥
 
 ---
-
 ## 🧪 Example Use Cases
 
 * SaaS customer support automation
@@ -149,7 +153,9 @@ This makes it easy to build dashboards later for:
 ## 👤 Author
 
 **Disha Gupta**
+
 AI Automation Engineer
+
 Focused on building scalable, AI-driven business workflows
 
 ---
