@@ -121,6 +121,11 @@ This makes it easy to build dashboards later for:
 5. Sit back and let automation cook 🔥
 
 ---
+## Preview Of Workflow
+
+![Image](https://github.com/Disha-Gupta-892/Workflow_Automations/blob/21d3b58575549517d2dd21435bea7a382b456671/Automated_Customer_Feedback_Platform/Automated_Customer_Feedback_Platform.png)
+
+---
 ## 🧪 Example Use Cases
 
 * SaaS customer support automation
