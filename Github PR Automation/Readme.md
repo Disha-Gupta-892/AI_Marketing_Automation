@@ -9,10 +9,15 @@ This workflow removes manual review overhead while maintaining **consistent, opi
 ## 🚀 What This Automation Does
 
 ✔️ Triggers automatically on **GitHub pull request events**
+
 ✔️ Fetches **file-level diffs** from the PR using GitHub API
+
 ✔️ Converts raw diffs into a **structured review prompt**
+
 ✔️ Uses an **AI Code Review Agent** to analyze changes
+
 ✔️ Posts **review comments directly on the PR**
+
 ✔️ Optionally adds a **“Reviewed by AI / Senior Developer” label**
 
 In short:
@@ -156,5 +161,3 @@ AI Automation Engineer
 Focused on building **agentic AI workflows**, developer productivity tools, and scalable automation systems.
 
 ---
-
-Say the word.
