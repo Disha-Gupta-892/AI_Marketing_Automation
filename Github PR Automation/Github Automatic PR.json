@@ -1,0 +1,914 @@
+{
+  "name": "Github Automatic PR",
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "options": {
+          "responseFormat": "text"
+        }
+      },
+      "id": "07666f24-c5b0-4043-9fe3-65f000baf9cb",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        320,
+        480
+      ],
+      "typeVersion": 1.2,
+      "credentials": {
+        "openAiApi": {
+          "id": "eeqi7JAGaJ15crTe",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://api.github.com/repos/{{$json.body.sender.login}}/{{$json.body.repository.name}}/pulls/{{$json.body.number}}/files",
+        "options": {}
+      },
+      "id": "5f22c7a2-4996-489f-8b0e-d5177c1e6da0",
+      "name": "Get file's Diffs from PR",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -96,
+        272
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "jsCode": "const files = $input.all().map(item => item.json);\n\nlet diffs = '';\n\nfor (const file of files) {\n  diffs += `### Fichier : ${file.filename}\\n\\n`;\n\n  if (file.patch) {\n    // IMPORTANT : On remplace tous les triple backticks par simple (ou échappement)\n    const safePatch = file.patch.replace(/```/g, \"''\");\n\n    diffs += \"```diff\\n\";\n    diffs += safePatch;\n    diffs += \"\\n```\\n\";\n  } else {\n    diffs += \"_Pas de patch disponible (probablement fichier binaire)._\";\n  }\n\n  diffs += \"\\n---\\n\\n\";\n}\n\nconst userMessage = `\nYou are a senior Python developer. \nPlease review the following code changes in these files :\n\n${diffs}\n\n---\n\nYour mission:\n\n- Review the proposed code changes file by file and by significant modification.\n\n- Generate inline comments on the relevant lines of code.\n\n- Ignore files without patches.\n\n- Do not repeat the code snippet or the filename.\n\n- Write the comments directly, without introducing the context.\n`;\n\nreturn [\n  {\n    json: {\n      user_message: userMessage.trim()\n    }\n  }\n];"
+      },
+      "id": "a0ca9975-ac31-4c07-bb5e-04d81974ebc4",
+      "name": "Create target Prompt from PR Diffs",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        128,
+        272
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "review",
+        "owner": {
+          "__rl": true,
+          "value": "mayank953",
+          "mode": "list",
+          "cachedResultName": "mayank953",
+          "cachedResultUrl": "https://github.com/mayank953"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "n8n-demo-pr",
+          "mode": "list",
+          "cachedResultName": "n8n-demo-pr",
+          "cachedResultUrl": "https://github.com/mayank953/n8n-demo-pr"
+        },
+        "pullRequestNumber": "={{ $('PR Trigger').first().json.body.number}}",
+        "event": "comment",
+        "body": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "id": "040b8428-ab24-4aea-a242-3acaea5a33d4",
+      "name": "GitHub Robot",
+      "type": "n8n-nodes-base.github",
+      "position": [
+        720,
+        272
+      ],
+      "webhookId": "39c2fe8b-f686-4699-8450-2a5b4c263d93",
+      "typeVersion": 1.1,
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "trr5FllHxBNT2tdm",
+          "name": "GitHub account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "edit",
+        "owner": {
+          "__rl": true,
+          "value": "code-studio13",
+          "mode": "list",
+          "cachedResultName": "code-studio13",
+          "cachedResultUrl": "https://github.com/code-studio13"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "n8n-demo-pr",
+          "mode": "list",
+          "cachedResultName": "n8n-demo-pr",
+          "cachedResultUrl": "https://github.com/code-studio13/n8n-demo-pr"
+        },
+        "issueNumber": "={{ $('PR Trigger').first().json.body.number }}",
+        "editFields": {
+          "body": "={{ $json.body }}",
+          "labels": [
+            {
+              "label": "ReviewedBy senior developer"
+            }
+          ]
+        }
+      },
+      "id": "e4de572a-92aa-47e0-b2ab-a1ff3981e2b1",
+      "name": "Add Label to PR",
+      "type": "n8n-nodes-base.github",
+      "position": [
+        944,
+        272
+      ],
+      "webhookId": "c98f39f1-603b-4013-9149-53b4cc31b611",
+      "typeVersion": 1,
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "trr5FllHxBNT2tdm",
+          "name": "GitHub account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "**1-The GitHub Trigger** node initiates the workflow whenever a pull request event occurs on a specified repository. It enables real-time automation based on GitHub activity.\n"
+      },
+      "id": "6506e391-a8cf-4e77-9475-3a5faa358969",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -464,
+        80
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "**2-Get PR Diffs**\nThe HTTP Request node fetches the list of changed files and their diffs from the pull request that triggered the workflow. It uses the GitHub REST API to retrieve this data dynamically based on the trigger payload.\n\nhttps://api.github.com/repos/{{$json.body.sender.login}}/{{$json.body.repository.name}}/pulls/{{$json.body.number}}/files",
+        "height": 220,
+        "width": 340,
+        "color": 3
+      },
+      "id": "18a52ca6-a86e-407f-8f2e-feca9af66f07",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -256,
+        448
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "**3-Create Prompt from diffs**\nThis Code node runs a JavaScript snippet to:\n-Parse file diffs from the previous HTTP Request node\n-Format each diff with its file name\n-Build a structured natural language prompt for the AI agent\n\nThe final output is a clear, contextual instruction like:\n*\"You are a senior iOS developer. Please review the following code changes in these files...\"*\n",
+        "height": 240,
+        "width": 360,
+        "color": 2
+      },
+      "id": "019a2932-5fe3-451d-82c1-85a7c422d465",
+      "name": "Sticky Note2",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "**Github Comment Poster**\nPosts the AI-generated review as a comment on the pull request using GitHub API.",
+        "color": 5
+      },
+      "id": "357ae9aa-717c-44c7-9eec-80152d94c1eb",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        624,
+        80
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.user_message }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are a helpful assistant, add review in point wise manner and also suggest the change to be done."
+        }
+      },
+      "id": "273246d7-3472-4368-a82f-4be1b1df669a",
+      "name": "Code Review Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        352,
+        272
+      ],
+      "typeVersion": 1.9
+    },
+    {
+      "parameters": {
+        "content": "**PR Labeler (optional)**\nAutomatically adds a label like *ReviewedByAI* to the pull request once the AI comment is posted.",
+        "height": 120,
+        "color": 7
+      },
+      "id": "4a22615c-6272-47a6-9644-18d4db695e0c",
+      "name": "Sticky Note4",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        880,
+        128
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "**Google Sheet Best Practices**\nEnables the AI agent to reference to your team coding guidelines stored in a Google Sheet for more accurate and opinionated reviews.\nYou can replace Google Sheets with any other database or tool.",
+        "width": 260,
+        "color": 6
+      },
+      "id": "692c2bb1-3bd2-483f-b389-2ca22664afb3",
+      "name": "Sticky Note5",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        608,
+        464
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "owner": {
+          "__rl": true,
+          "value": "code-studio13",
+          "mode": "list",
+          "cachedResultName": "code-studio13",
+          "cachedResultUrl": "https://github.com/code-studio13"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "n8n-demo-pr",
+          "mode": "list"
+        },
+        "events": [
+          "pull_request"
+        ],
+        "options": {}
+      },
+      "type": "n8n-nodes-base.githubTrigger",
+      "typeVersion": 1,
+      "position": [
+        -352,
+        304
+      ],
+      "id": "d246391a-11a1-42ff-8d78-dd5e79647032",
+      "name": "PR Trigger",
+      "webhookId": "36f2fa14-6683-4cf3-bce8-c01ae29698f5",
+      "credentials": {
+        "githubOAuth2Api": {
+          "id": "trr5FllHxBNT2tdm",
+          "name": "GitHub account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "PR Trigger": [
+      {
+        "json": {
+          "body": {
+            "action": "edited",
+            "number": 3,
+            "pull_request": {
+              "url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/pulls/3",
+              "id": 3133589150,
+              "node_id": "PR_kwDOQwYk6s66xsae",
+              "html_url": "https://github.com/code-studio13/n8n-demo-pr/pull/3",
+              "diff_url": "https://github.com/code-studio13/n8n-demo-pr/pull/3.diff",
+              "patch_url": "https://github.com/code-studio13/n8n-demo-pr/pull/3.patch",
+              "issue_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/issues/3",
+              "number": 3,
+              "state": "open",
+              "locked": false,
+              "title": "Refactor submit_application function for clarity",
+              "user": {
+                "login": "code-studio13",
+                "id": 243823682,
+                "node_id": "U_kgDODoh0Qg",
+                "avatar_url": "https://avatars.githubusercontent.com/u/243823682?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/code-studio13",
+                "html_url": "https://github.com/code-studio13",
+                "followers_url": "https://api.github.com/users/code-studio13/followers",
+                "following_url": "https://api.github.com/users/code-studio13/following{/other_user}",
+                "gists_url": "https://api.github.com/users/code-studio13/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/code-studio13/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/code-studio13/subscriptions",
+                "organizations_url": "https://api.github.com/users/code-studio13/orgs",
+                "repos_url": "https://api.github.com/users/code-studio13/repos",
+                "events_url": "https://api.github.com/users/code-studio13/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/code-studio13/received_events",
+                "type": "User",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "body": "### Fichier: app.py\n\n- The multiple identical return statements have been removed, which helps in reducing redundancy. \n- Check if there's a logical flow that needs to be maintained with the rollback logic; ensure that a proper error message is conveyed if the database error occurs.\n- Instead of printing the error directly, consider using a logging framework for better tracking and debugging.\n- The indentation of `conn.rollback()` appears to be inconsistent. It should align with the surrounding context to maintain readability and avoid errors.\n- There is no newline before the last line which is a good practice; ensure that it is added to adhere to coding standards.\n\n### Fichier: app_pythoncode.txt\n\n- The `create_db_connection` function is added, which is good for modularizing the connection logic. Ensure that this is called wherever necessary to avoid duplication of connection logic.\n- There is a duplicate definition of `create_db_connection`. This should be removed to maintain a single source of truth for the database connection.\n- Consider implementing a more robust error handling strategy in `create_db_connection`, such as raising exceptions or retrying the connection, instead of just printing an error.\n- Ensure that the comments are meaningful and related to the code below them, enhancing code readability and maintainability.\n- There is no newline at the end of the file; adding one is recommended to conform to standard practices.\n\n### Fichier: readme.md\n\n- The content of the file has changed significantly and appears to be a placeholder or casual communication rather than a technical explanation of the project.\n- Update the README with relevant project documentation, including setup instructions, an overview of functionality, and contribution guidelines.\n- The generic greeting and request for help should be removed or rephrased to provide clear information about the project’s purpose.\n- Ensure that the README is more informative to assist users or developers in understanding the project's objectives.",
+              "created_at": "2025-12-29T05:28:45Z",
+              "updated_at": "2025-12-29T06:05:40Z",
+              "closed_at": null,
+              "merged_at": null,
+              "merge_commit_sha": null,
+              "assignee": null,
+              "assignees": [],
+              "requested_reviewers": [],
+              "requested_teams": [],
+              "labels": [
+                {
+                  "id": 9903034160,
+                  "node_id": "LA_kwDOQwYk6s8AAAACTkRPMA",
+                  "url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/labels/ReviewedBy%20senior%20developer",
+                  "name": "ReviewedBy senior developer",
+                  "color": "ededed",
+                  "default": false,
+                  "description": null
+                }
+              ],
+              "milestone": null,
+              "draft": false,
+              "commits_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/pulls/3/commits",
+              "review_comments_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/pulls/3/comments",
+              "review_comment_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/pulls/comments{/number}",
+              "comments_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/issues/3/comments",
+              "statuses_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/statuses/02f6dae01c54c62ea7255477b637c9b0426b009e",
+              "head": {
+                "label": "code-studio13:intern3",
+                "ref": "intern3",
+                "sha": "02f6dae01c54c62ea7255477b637c9b0426b009e",
+                "user": {
+                  "login": "code-studio13",
+                  "id": 243823682,
+                  "node_id": "U_kgDODoh0Qg",
+                  "avatar_url": "https://avatars.githubusercontent.com/u/243823682?v=4",
+                  "gravatar_id": "",
+                  "url": "https://api.github.com/users/code-studio13",
+                  "html_url": "https://github.com/code-studio13",
+                  "followers_url": "https://api.github.com/users/code-studio13/followers",
+                  "following_url": "https://api.github.com/users/code-studio13/following{/other_user}",
+                  "gists_url": "https://api.github.com/users/code-studio13/gists{/gist_id}",
+                  "starred_url": "https://api.github.com/users/code-studio13/starred{/owner}{/repo}",
+                  "subscriptions_url": "https://api.github.com/users/code-studio13/subscriptions",
+                  "organizations_url": "https://api.github.com/users/code-studio13/orgs",
+                  "repos_url": "https://api.github.com/users/code-studio13/repos",
+                  "events_url": "https://api.github.com/users/code-studio13/events{/privacy}",
+                  "received_events_url": "https://api.github.com/users/code-studio13/received_events",
+                  "type": "User",
+                  "user_view_type": "public",
+                  "site_admin": false
+                },
+                "repo": {
+                  "id": 1124476138,
+                  "node_id": "R_kgDOQwYk6g",
+                  "name": "n8n-demo-pr",
+                  "full_name": "code-studio13/n8n-demo-pr",
+                  "private": false,
+                  "owner": {
+                    "login": "code-studio13",
+                    "id": 243823682,
+                    "node_id": "U_kgDODoh0Qg",
+                    "avatar_url": "https://avatars.githubusercontent.com/u/243823682?v=4",
+                    "gravatar_id": "",
+                    "url": "https://api.github.com/users/code-studio13",
+                    "html_url": "https://github.com/code-studio13",
+                    "followers_url": "https://api.github.com/users/code-studio13/followers",
+                    "following_url": "https://api.github.com/users/code-studio13/following{/other_user}",
+                    "gists_url": "https://api.github.com/users/code-studio13/gists{/gist_id}",
+                    "starred_url": "https://api.github.com/users/code-studio13/starred{/owner}{/repo}",
+                    "subscriptions_url": "https://api.github.com/users/code-studio13/subscriptions",
+                    "organizations_url": "https://api.github.com/users/code-studio13/orgs",
+                    "repos_url": "https://api.github.com/users/code-studio13/repos",
+                    "events_url": "https://api.github.com/users/code-studio13/events{/privacy}",
+                    "received_events_url": "https://api.github.com/users/code-studio13/received_events",
+                    "type": "User",
+                    "user_view_type": "public",
+                    "site_admin": false
+                  },
+                  "html_url": "https://github.com/code-studio13/n8n-demo-pr",
+                  "description": null,
+                  "fork": false,
+                  "url": "https://api.github.com/repos/code-studio13/n8n-demo-pr",
+                  "forks_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/forks",
+                  "keys_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/keys{/key_id}",
+                  "collaborators_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/collaborators{/collaborator}",
+                  "teams_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/teams",
+                  "hooks_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/hooks",
+                  "issue_events_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/issues/events{/number}",
+                  "events_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/events",
+                  "assignees_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/assignees{/user}",
+                  "branches_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/branches{/branch}",
+                  "tags_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/tags",
+                  "blobs_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/git/blobs{/sha}",
+                  "git_tags_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/git/tags{/sha}",
+                  "git_refs_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/git/refs{/sha}",
+                  "trees_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/git/trees{/sha}",
+                  "statuses_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/statuses/{sha}",
+                  "languages_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/languages",
+                  "stargazers_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/stargazers",
+                  "contributors_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/contributors",
+                  "subscribers_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/subscribers",
+                  "subscription_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/subscription",
+                  "commits_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/commits{/sha}",
+                  "git_commits_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/git/commits{/sha}",
+                  "comments_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/comments{/number}",
+                  "issue_comment_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/issues/comments{/number}",
+                  "contents_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/contents/{+path}",
+                  "compare_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/compare/{base}...{head}",
+                  "merges_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/merges",
+                  "archive_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/{archive_format}{/ref}",
+                  "downloads_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/downloads",
+                  "issues_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/issues{/number}",
+                  "pulls_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/pulls{/number}",
+                  "milestones_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/milestones{/number}",
+                  "notifications_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/notifications{?since,all,participating}",
+                  "labels_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/labels{/name}",
+                  "releases_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/releases{/id}",
+                  "deployments_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/deployments",
+                  "created_at": "2025-12-29T04:54:52Z",
+                  "updated_at": "2025-12-29T05:41:18Z",
+                  "pushed_at": "2025-12-29T06:02:30Z",
+                  "git_url": "git://github.com/code-studio13/n8n-demo-pr.git",
+                  "ssh_url": "git@github.com:code-studio13/n8n-demo-pr.git",
+                  "clone_url": "https://github.com/code-studio13/n8n-demo-pr.git",
+                  "svn_url": "https://github.com/code-studio13/n8n-demo-pr",
+                  "homepage": null,
+                  "size": 3176,
+                  "stargazers_count": 0,
+                  "watchers_count": 0,
+                  "language": "HTML",
+                  "has_issues": true,
+                  "has_projects": true,
+                  "has_downloads": true,
+                  "has_wiki": true,
+                  "has_pages": false,
+                  "has_discussions": false,
+                  "forks_count": 0,
+                  "mirror_url": null,
+                  "archived": false,
+                  "disabled": false,
+                  "open_issues_count": 3,
+                  "license": null,
+                  "allow_forking": true,
+                  "is_template": false,
+                  "web_commit_signoff_required": false,
+                  "topics": [],
+                  "visibility": "public",
+                  "forks": 0,
+                  "open_issues": 3,
+                  "watchers": 0,
+                  "default_branch": "main",
+                  "allow_squash_merge": true,
+                  "allow_merge_commit": true,
+                  "allow_rebase_merge": true,
+                  "allow_auto_merge": false,
+                  "delete_branch_on_merge": false,
+                  "allow_update_branch": false,
+                  "use_squash_pr_title_as_default": false,
+                  "squash_merge_commit_message": "COMMIT_MESSAGES",
+                  "squash_merge_commit_title": "COMMIT_OR_PR_TITLE",
+                  "merge_commit_message": "PR_TITLE",
+                  "merge_commit_title": "MERGE_MESSAGE"
+                }
+              },
+              "base": {
+                "label": "code-studio13:main",
+                "ref": "main",
+                "sha": "9794a0fea3c321c9c9c2c4fcc999ac1e87aae99f",
+                "user": {
+                  "login": "code-studio13",
+                  "id": 243823682,
+                  "node_id": "U_kgDODoh0Qg",
+                  "avatar_url": "https://avatars.githubusercontent.com/u/243823682?v=4",
+                  "gravatar_id": "",
+                  "url": "https://api.github.com/users/code-studio13",
+                  "html_url": "https://github.com/code-studio13",
+                  "followers_url": "https://api.github.com/users/code-studio13/followers",
+                  "following_url": "https://api.github.com/users/code-studio13/following{/other_user}",
+                  "gists_url": "https://api.github.com/users/code-studio13/gists{/gist_id}",
+                  "starred_url": "https://api.github.com/users/code-studio13/starred{/owner}{/repo}",
+                  "subscriptions_url": "https://api.github.com/users/code-studio13/subscriptions",
+                  "organizations_url": "https://api.github.com/users/code-studio13/orgs",
+                  "repos_url": "https://api.github.com/users/code-studio13/repos",
+                  "events_url": "https://api.github.com/users/code-studio13/events{/privacy}",
+                  "received_events_url": "https://api.github.com/users/code-studio13/received_events",
+                  "type": "User",
+                  "user_view_type": "public",
+                  "site_admin": false
+                },
+                "repo": {
+                  "id": 1124476138,
+                  "node_id": "R_kgDOQwYk6g",
+                  "name": "n8n-demo-pr",
+                  "full_name": "code-studio13/n8n-demo-pr",
+                  "private": false,
+                  "owner": {
+                    "login": "code-studio13",
+                    "id": 243823682,
+                    "node_id": "U_kgDODoh0Qg",
+                    "avatar_url": "https://avatars.githubusercontent.com/u/243823682?v=4",
+                    "gravatar_id": "",
+                    "url": "https://api.github.com/users/code-studio13",
+                    "html_url": "https://github.com/code-studio13",
+                    "followers_url": "https://api.github.com/users/code-studio13/followers",
+                    "following_url": "https://api.github.com/users/code-studio13/following{/other_user}",
+                    "gists_url": "https://api.github.com/users/code-studio13/gists{/gist_id}",
+                    "starred_url": "https://api.github.com/users/code-studio13/starred{/owner}{/repo}",
+                    "subscriptions_url": "https://api.github.com/users/code-studio13/subscriptions",
+                    "organizations_url": "https://api.github.com/users/code-studio13/orgs",
+                    "repos_url": "https://api.github.com/users/code-studio13/repos",
+                    "events_url": "https://api.github.com/users/code-studio13/events{/privacy}",
+                    "received_events_url": "https://api.github.com/users/code-studio13/received_events",
+                    "type": "User",
+                    "user_view_type": "public",
+                    "site_admin": false
+                  },
+                  "html_url": "https://github.com/code-studio13/n8n-demo-pr",
+                  "description": null,
+                  "fork": false,
+                  "url": "https://api.github.com/repos/code-studio13/n8n-demo-pr",
+                  "forks_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/forks",
+                  "keys_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/keys{/key_id}",
+                  "collaborators_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/collaborators{/collaborator}",
+                  "teams_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/teams",
+                  "hooks_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/hooks",
+                  "issue_events_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/issues/events{/number}",
+                  "events_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/events",
+                  "assignees_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/assignees{/user}",
+                  "branches_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/branches{/branch}",
+                  "tags_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/tags",
+                  "blobs_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/git/blobs{/sha}",
+                  "git_tags_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/git/tags{/sha}",
+                  "git_refs_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/git/refs{/sha}",
+                  "trees_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/git/trees{/sha}",
+                  "statuses_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/statuses/{sha}",
+                  "languages_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/languages",
+                  "stargazers_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/stargazers",
+                  "contributors_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/contributors",
+                  "subscribers_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/subscribers",
+                  "subscription_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/subscription",
+                  "commits_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/commits{/sha}",
+                  "git_commits_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/git/commits{/sha}",
+                  "comments_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/comments{/number}",
+                  "issue_comment_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/issues/comments{/number}",
+                  "contents_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/contents/{+path}",
+                  "compare_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/compare/{base}...{head}",
+                  "merges_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/merges",
+                  "archive_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/{archive_format}{/ref}",
+                  "downloads_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/downloads",
+                  "issues_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/issues{/number}",
+                  "pulls_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/pulls{/number}",
+                  "milestones_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/milestones{/number}",
+                  "notifications_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/notifications{?since,all,participating}",
+                  "labels_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/labels{/name}",
+                  "releases_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/releases{/id}",
+                  "deployments_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/deployments",
+                  "created_at": "2025-12-29T04:54:52Z",
+                  "updated_at": "2025-12-29T05:41:18Z",
+                  "pushed_at": "2025-12-29T06:02:30Z",
+                  "git_url": "git://github.com/code-studio13/n8n-demo-pr.git",
+                  "ssh_url": "git@github.com:code-studio13/n8n-demo-pr.git",
+                  "clone_url": "https://github.com/code-studio13/n8n-demo-pr.git",
+                  "svn_url": "https://github.com/code-studio13/n8n-demo-pr",
+                  "homepage": null,
+                  "size": 3176,
+                  "stargazers_count": 0,
+                  "watchers_count": 0,
+                  "language": "HTML",
+                  "has_issues": true,
+                  "has_projects": true,
+                  "has_downloads": true,
+                  "has_wiki": true,
+                  "has_pages": false,
+                  "has_discussions": false,
+                  "forks_count": 0,
+                  "mirror_url": null,
+                  "archived": false,
+                  "disabled": false,
+                  "open_issues_count": 3,
+                  "license": null,
+                  "allow_forking": true,
+                  "is_template": false,
+                  "web_commit_signoff_required": false,
+                  "topics": [],
+                  "visibility": "public",
+                  "forks": 0,
+                  "open_issues": 3,
+                  "watchers": 0,
+                  "default_branch": "main",
+                  "allow_squash_merge": true,
+                  "allow_merge_commit": true,
+                  "allow_rebase_merge": true,
+                  "allow_auto_merge": false,
+                  "delete_branch_on_merge": false,
+                  "allow_update_branch": false,
+                  "use_squash_pr_title_as_default": false,
+                  "squash_merge_commit_message": "COMMIT_MESSAGES",
+                  "squash_merge_commit_title": "COMMIT_OR_PR_TITLE",
+                  "merge_commit_message": "PR_TITLE",
+                  "merge_commit_title": "MERGE_MESSAGE"
+                }
+              },
+              "_links": {
+                "self": {
+                  "href": "https://api.github.com/repos/code-studio13/n8n-demo-pr/pulls/3"
+                },
+                "html": {
+                  "href": "https://github.com/code-studio13/n8n-demo-pr/pull/3"
+                },
+                "issue": {
+                  "href": "https://api.github.com/repos/code-studio13/n8n-demo-pr/issues/3"
+                },
+                "comments": {
+                  "href": "https://api.github.com/repos/code-studio13/n8n-demo-pr/issues/3/comments"
+                },
+                "review_comments": {
+                  "href": "https://api.github.com/repos/code-studio13/n8n-demo-pr/pulls/3/comments"
+                },
+                "review_comment": {
+                  "href": "https://api.github.com/repos/code-studio13/n8n-demo-pr/pulls/comments{/number}"
+                },
+                "commits": {
+                  "href": "https://api.github.com/repos/code-studio13/n8n-demo-pr/pulls/3/commits"
+                },
+                "statuses": {
+                  "href": "https://api.github.com/repos/code-studio13/n8n-demo-pr/statuses/02f6dae01c54c62ea7255477b637c9b0426b009e"
+                }
+              },
+              "author_association": "OWNER",
+              "auto_merge": null,
+              "active_lock_reason": null,
+              "merged": false,
+              "mergeable": false,
+              "rebaseable": false,
+              "mergeable_state": "dirty",
+              "merged_by": null,
+              "comments": 0,
+              "review_comments": 0,
+              "maintainer_can_modify": false,
+              "commits": 3,
+              "additions": 21,
+              "deletions": 15,
+              "changed_files": 3
+            },
+            "changes": {
+              "body": {
+                "from": "### app.py\n- The removal of redundant response lines improves code clarity and reduces duplication. Good job cleaning this up.\n- Ensure that the `conn.rollback()` function is properly indented to maintain the correct flow of the program.\n- Consider handling the potential database connection error with more granularity or logging for better debugging in production.\n  \n### app_pythoncode.txt\n- The addition of `create_db_connection()` at the top is beneficial as it encapsulates the database connection logic. Make sure it is called wherever necessary to avoid issues with database connectivity.\n- The docstring for the `submit_application` function is informative; however, it can be enhanced by mentioning specifics about what data is expected from the form.\n- The second occurrence of `create_db_connection()` seems redundant and should be removed to maintain one consistent implementation of this function.\n- Ensure to include error-handling logic after establishing the connection whenever it is invoked to avoid unexpected failures.\n\n### readme.md\n- The initial text is informal and may not provide sufficient context to the reader. It would be better to include a brief overview of what n8n automation entails.\n- Consider revising the text to maintain a professional tone and clarify the purpose of this document, possibly including sections like \"Installation\", \"Usage\", or \"Contributing\"."
+              }
+            },
+            "repository": {
+              "id": 1124476138,
+              "node_id": "R_kgDOQwYk6g",
+              "name": "n8n-demo-pr",
+              "full_name": "code-studio13/n8n-demo-pr",
+              "private": false,
+              "owner": {
+                "login": "code-studio13",
+                "id": 243823682,
+                "node_id": "U_kgDODoh0Qg",
+                "avatar_url": "https://avatars.githubusercontent.com/u/243823682?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/code-studio13",
+                "html_url": "https://github.com/code-studio13",
+                "followers_url": "https://api.github.com/users/code-studio13/followers",
+                "following_url": "https://api.github.com/users/code-studio13/following{/other_user}",
+                "gists_url": "https://api.github.com/users/code-studio13/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/code-studio13/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/code-studio13/subscriptions",
+                "organizations_url": "https://api.github.com/users/code-studio13/orgs",
+                "repos_url": "https://api.github.com/users/code-studio13/repos",
+                "events_url": "https://api.github.com/users/code-studio13/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/code-studio13/received_events",
+                "type": "User",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "html_url": "https://github.com/code-studio13/n8n-demo-pr",
+              "description": null,
+              "fork": false,
+              "url": "https://api.github.com/repos/code-studio13/n8n-demo-pr",
+              "forks_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/forks",
+              "keys_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/keys{/key_id}",
+              "collaborators_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/collaborators{/collaborator}",
+              "teams_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/teams",
+              "hooks_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/hooks",
+              "issue_events_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/issues/events{/number}",
+              "events_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/events",
+              "assignees_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/assignees{/user}",
+              "branches_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/branches{/branch}",
+              "tags_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/tags",
+              "blobs_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/git/blobs{/sha}",
+              "git_tags_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/git/tags{/sha}",
+              "git_refs_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/git/refs{/sha}",
+              "trees_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/git/trees{/sha}",
+              "statuses_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/statuses/{sha}",
+              "languages_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/languages",
+              "stargazers_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/stargazers",
+              "contributors_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/contributors",
+              "subscribers_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/subscribers",
+              "subscription_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/subscription",
+              "commits_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/commits{/sha}",
+              "git_commits_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/git/commits{/sha}",
+              "comments_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/comments{/number}",
+              "issue_comment_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/issues/comments{/number}",
+              "contents_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/contents/{+path}",
+              "compare_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/compare/{base}...{head}",
+              "merges_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/merges",
+              "archive_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/{archive_format}{/ref}",
+              "downloads_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/downloads",
+              "issues_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/issues{/number}",
+              "pulls_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/pulls{/number}",
+              "milestones_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/milestones{/number}",
+              "notifications_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/notifications{?since,all,participating}",
+              "labels_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/labels{/name}",
+              "releases_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/releases{/id}",
+              "deployments_url": "https://api.github.com/repos/code-studio13/n8n-demo-pr/deployments",
+              "created_at": "2025-12-29T04:54:52Z",
+              "updated_at": "2025-12-29T05:41:18Z",
+              "pushed_at": "2025-12-29T06:02:30Z",
+              "git_url": "git://github.com/code-studio13/n8n-demo-pr.git",
+              "ssh_url": "git@github.com:code-studio13/n8n-demo-pr.git",
+              "clone_url": "https://github.com/code-studio13/n8n-demo-pr.git",
+              "svn_url": "https://github.com/code-studio13/n8n-demo-pr",
+              "homepage": null,
+              "size": 3176,
+              "stargazers_count": 0,
+              "watchers_count": 0,
+              "language": "HTML",
+              "has_issues": true,
+              "has_projects": true,
+              "has_downloads": true,
+              "has_wiki": true,
+              "has_pages": false,
+              "has_discussions": false,
+              "forks_count": 0,
+              "mirror_url": null,
+              "archived": false,
+              "disabled": false,
+              "open_issues_count": 3,
+              "license": null,
+              "allow_forking": true,
+              "is_template": false,
+              "web_commit_signoff_required": false,
+              "topics": [],
+              "visibility": "public",
+              "forks": 0,
+              "open_issues": 3,
+              "watchers": 0,
+              "default_branch": "main"
+            },
+            "sender": {
+              "login": "code-studio13",
+              "id": 243823682,
+              "node_id": "U_kgDODoh0Qg",
+              "avatar_url": "https://avatars.githubusercontent.com/u/243823682?v=4",
+              "gravatar_id": "",
+              "url": "https://api.github.com/users/code-studio13",
+              "html_url": "https://github.com/code-studio13",
+              "followers_url": "https://api.github.com/users/code-studio13/followers",
+              "following_url": "https://api.github.com/users/code-studio13/following{/other_user}",
+              "gists_url": "https://api.github.com/users/code-studio13/gists{/gist_id}",
+              "starred_url": "https://api.github.com/users/code-studio13/starred{/owner}{/repo}",
+              "subscriptions_url": "https://api.github.com/users/code-studio13/subscriptions",
+              "organizations_url": "https://api.github.com/users/code-studio13/orgs",
+              "repos_url": "https://api.github.com/users/code-studio13/repos",
+              "events_url": "https://api.github.com/users/code-studio13/events{/privacy}",
+              "received_events_url": "https://api.github.com/users/code-studio13/received_events",
+              "type": "User",
+              "user_view_type": "public",
+              "site_admin": false
+            }
+          },
+          "headers": {
+            "host": "dg-13.app.n8n.cloud",
+            "user-agent": "GitHub-Hookshot/006ce70",
+            "content-length": "26813",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "140.82.115.249",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "US",
+            "cf-ray": "9b571b70a34b2081-IAD",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "x-forwarded-for": "140.82.115.249, 172.71.222.91",
+            "x-forwarded-host": "dg-13.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-94-855644bdd-2rt9s",
+            "x-github-delivery": "676279f0-e47c-11f0-9312-6b24b0332e34",
+            "x-github-event": "pull_request",
+            "x-github-hook-id": "588744656",
+            "x-github-hook-installation-target-id": "1124476138",
+            "x-github-hook-installation-target-type": "repository",
+            "x-is-trusted": "yes",
+            "x-real-ip": "140.82.115.249"
+          },
+          "query": {}
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "GitHub Robot": {
+      "main": [
+        [
+          {
+            "node": "Add Label to PR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code Review Agent": {
+      "main": [
+        [
+          {
+            "node": "GitHub Robot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Code Review Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get file's Diffs from PR": {
+      "main": [
+        [
+          {
+            "node": "Create target Prompt from PR Diffs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create target Prompt from PR Diffs": {
+      "main": [
+        [
+          {
+            "node": "Code Review Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PR Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get file's Diffs from PR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "de7f1fb3-05b5-4807-a914-a1e6022a8eea",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c8501d048ce1787913ce37cfa824fadf8fe25ecd9c4978bd5d93c6c3abc671cb"
+  },
+  "id": "gGYJQY1gTOaB9C58",
+  "tags": []
+}
