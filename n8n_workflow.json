@@ -1,0 +1,290 @@
+{
+  "name": "AI Marketing Automation Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "marketing-automation",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "ai-marketing-automation"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Extract campaign data from webhook\nconst data = items[0].json;\n\nreturn [\n  {\n    json: {\n      campaign_id: data.campaign_id || $uuid(),\n      product_name: data.product_name,\n      features: data.features,\n      tone: data.tone,\n      image_url: data.image_url,\n      workflow_step: 'brief_creation',\n      timestamp: new Date().toISOString()\n    }\n  }\n];"
+      },
+      "id": "extract-data",
+      "name": "Extract Campaign Data",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8000/api/agents/brief",
+        "options": {
+          "bodyParametersJson": "={{ JSON.stringify($json) }}"
+        },
+        "method": "POST"
+      },
+      "id": "brief-agent",
+      "name": "Brief Agent API Call",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8000/api/agents/copy",
+        "options": {
+          "bodyParametersJson": "={{ JSON.stringify({ brief: $json.brief, campaign_id: $json.campaign_id }) }}"
+        },
+        "method": "POST"
+      },
+      "id": "copy-agent",
+      "name": "Copy Agent API Call",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.status }}",
+              "operation": "equals",
+              "value2": "success"
+            }
+          ]
+        }
+      },
+      "id": "check-copy-success",
+      "name": "Check Copy Generation",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1050, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Wait for user approval\n// In production, this would integrate with approval system\nconst data = items[0].json;\n\nreturn [\n  {\n    json: {\n      campaign_id: data.campaign_id,\n      selected_headline: data.selected_headline || 0,\n      selected_captions: data.selected_captions || {\n        linkedin: 0,\n        instagram: 0,\n        facebook: 0\n      },\n      approval_status: 'approved',\n      approved_at: new Date().toISOString()\n    }\n  }\n];"
+      },
+      "id": "approval-handler",
+      "name": "Handle User Approval",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [1250, 200]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8000/api/agents/creative",
+        "options": {
+          "bodyParametersJson": "={{ JSON.stringify($json) }}"
+        },
+        "method": "POST"
+      },
+      "id": "creative-agent",
+      "name": "Creative Agent API Call",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1450, 200]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8000/api/agents/resize",
+        "options": {
+          "bodyParametersJson": "={{ JSON.stringify({ campaign_id: $json.campaign_id, layout_rules: $json.layout_rules }) }}"
+        },
+        "method": "POST"
+      },
+      "id": "resize-agent",
+      "name": "Resize Agent API Call",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1650, 200]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8000/api/agents/publish",
+        "options": {
+          "bodyParametersJson": "={{ JSON.stringify({ campaign_id: $json.campaign_id, creatives: $json.creatives }) }}"
+        },
+        "method": "POST"
+      },
+      "id": "publisher-agent",
+      "name": "Publisher Agent API Call",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1850, 200]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Log workflow completion\nconst data = items[0].json;\n\nconsole.log('Marketing automation workflow completed');\nconsole.log('Campaign ID:', data.campaign_id);\nconsole.log('Publish results:', data.publish_results);\n\nreturn [\n  {\n    json: {\n      workflow_status: 'completed',\n      campaign_id: data.campaign_id,\n      completed_at: new Date().toISOString(),\n      publish_results: data.publish_results\n    }\n  }\n];"
+      },
+      "id": "workflow-logger",
+      "name": "Log Workflow Completion",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [2050, 200]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Handle error\nconst error = items[0].json;\n\nconsole.error('Workflow error:', error);\n\nreturn [\n  {\n    json: {\n      workflow_status: 'failed',\n      error: error,\n      timestamp: new Date().toISOString()\n    }\n  }\n];"
+      },
+      "id": "error-handler",
+      "name": "Handle Error",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [1250, 400]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "channel": "#marketing-automation",
+        "text": "=Campaign {{ $json.campaign_id }} completed successfully!\\nPublished to: {{ $json.publish_results.platforms.join(', ') }}"
+      },
+      "id": "slack-notification",
+      "name": "Send Slack Notification",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 1,
+      "position": [2250, 200],
+      "credentials": {
+        "slackApi": {
+          "id": "1",
+          "name": "Slack API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Extract Campaign Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Campaign Data": {
+      "main": [
+        [
+          {
+            "node": "Brief Agent API Call",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Brief Agent API Call": {
+      "main": [
+        [
+          {
+            "node": "Copy Agent API Call",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Copy Agent API Call": {
+      "main": [
+        [
+          {
+            "node": "Check Copy Generation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Copy Generation": {
+      "main": [
+        [
+          {
+            "node": "Handle User Approval",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Handle Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Handle User Approval": {
+      "main": [
+        [
+          {
+            "node": "Creative Agent API Call",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Creative Agent API Call": {
+      "main": [
+        [
+          {
+            "node": "Resize Agent API Call",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resize Agent API Call": {
+      "main": [
+        [
+          {
+            "node": "Publisher Agent API Call",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publisher Agent API Call": {
+      "main": [
+        [
+          {
+            "node": "Log Workflow Completion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Workflow Completion": {
+      "main": [
+        [
+          {
+            "node": "Send Slack Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 1,
+  "updatedAt": "2024-01-15T10:00:00.000Z",
+  "versionId": "1"
+}
