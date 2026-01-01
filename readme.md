@@ -470,7 +470,7 @@ curl -X POST http://localhost:8000/api/create-creatives \
 - Optimize image sizes before processing
 - Implement request queuing for high volume
 
-## 🔄 N8N Workflow Integration
+## 🔄Future Enhancements - N8N Workflow Integration
 
 The N8N workflow orchestrates the entire pipeline:
 
