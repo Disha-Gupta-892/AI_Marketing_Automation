@@ -1,0 +1,846 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "AI_Marketing_Automation",
+        "formFields": {
+          "values": [
+            {
+              "fieldName": "name of product",
+              "fieldLabel": "Name",
+              "requiredField": true
+            },
+            {
+              "fieldName": "Image",
+              "fieldLabel": "product image",
+              "fieldType": "file",
+              "acceptFileTypes": ".jpg,.jpeg,.png",
+              "requiredField": true
+            },
+            {
+              "fieldName": "Key Features",
+              "fieldLabel": "features of product"
+            },
+            {
+              "fieldName": "Tone of post",
+              "fieldLabel": "Tone",
+              "fieldType": "checkbox",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Casual"
+                  },
+                  {
+                    "option": "minimal"
+                  },
+                  {
+                    "option": "premium"
+                  },
+                  {
+                    "option": "luxury"
+                  },
+                  {
+                    "option": "modern"
+                  },
+                  {
+                    "option": "funny"
+                  },
+                  {
+                    "option": "professional"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.4,
+      "position": [
+        -736,
+        -272
+      ],
+      "id": "ba0ced28-ff14-41f7-9a2c-e87f0d64b7b6",
+      "name": "On form submission",
+      "webhookId": "89ce7e5a-60c5-4b5f-9d43-1ad1e509fd79"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $workflow.id }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -624,
+        -32
+      ],
+      "id": "793b477a-b82c-4bd4-80fe-512204bbdd32",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "options": {
+          "google_domain": "google.com"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolSerpApi",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        -32
+      ],
+      "id": "f4ab4eb6-1e32-4831-8e60-2bbfb3b6e735",
+      "name": "SerpAPI",
+      "credentials": {
+        "serpApi": {
+          "id": "HglVbIGzGh4A6DML",
+          "name": "SerpAPI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "google/gemini-2.0-flash-001",
+        "options": {
+          "responseFormat": "json_object"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -752,
+        -48
+      ],
+      "id": "2e5f7880-dfa9-48e0-8745-296e3006e0db",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "XlBa66LnrdIEo7Sl",
+          "name": "OpenRouter account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "google/gemini-2.5-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        96
+      ],
+      "id": "4e101f0c-3951-4097-9da8-9ade517b152e",
+      "name": "OpenRouter Chat Model1",
+      "credentials": {
+        "openRouterApi": {
+          "id": "XlBa66LnrdIEo7Sl",
+          "name": "OpenRouter account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.output }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -192,
+        96
+      ],
+      "id": "9a2e0914-c16e-4642-8d9e-318a77da7e08",
+      "name": "Simple Memory1"
+    },
+    {
+      "parameters": {
+        "model": "google/gemini-2.5-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        32,
+        -32
+      ],
+      "id": "b5a4168d-7ae9-4cf2-b461-3d09d81a5e5c",
+      "name": "OpenRouter Chat Model3",
+      "credentials": {
+        "openRouterApi": {
+          "id": "XlBa66LnrdIEo7Sl",
+          "name": "OpenRouter account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('BRIEF AGENT').item.json.output }}",
+        "contextWindowLength": 15
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        208,
+        -32
+      ],
+      "id": "2eb0db2a-6de5-4af5-8ca9-b52777b7fa2b",
+      "name": "Simple Memory2"
+    },
+    {
+      "parameters": {
+        "model": "google/gemma-2-9b-it",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        336,
+        -224
+      ],
+      "id": "0408b4b3-e74f-423d-beab-d74ae36a8e6f",
+      "name": "OpenRouter Chat Model2",
+      "credentials": {
+        "openRouterApi": {
+          "id": "XlBa66LnrdIEo7Sl",
+          "name": "OpenRouter account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.output }}",
+        "contextWindowLength": 15
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        432,
+        -368
+      ],
+      "id": "8e2346a2-e029-4c7d-9bb0-5fcb1be4b540",
+      "name": "Simple Memory3"
+    },
+    {
+      "parameters": {
+        "model": "google/gemini-2.5-flash-image",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        752,
+        -112
+      ],
+      "id": "8fb04181-bb7b-4957-a41a-931f585c9e83",
+      "name": "OpenRouter Chat Model4",
+      "credentials": {
+        "openRouterApi": {
+          "id": "XlBa66LnrdIEo7Sl",
+          "name": "OpenRouter account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.data.approved }}",
+        "contextWindowLength": 15
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        848,
+        -32
+      ],
+      "id": "0d8a4093-f311-4966-b516-8c6649ff9c51",
+      "name": "Simple Memory4"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "21744a50-36e5-43e7-9681-6a0cd3976691",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        624,
+        128
+      ],
+      "id": "024fe466-790c-4658-a9dd-9258003a2d47",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "model": "google/gemma-3-12b-it",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        992,
+        -304
+      ],
+      "id": "3cf92357-f358-4022-833a-e9f662804de6",
+      "name": "OpenRouter Chat Model5",
+      "credentials": {
+        "openRouterApi": {
+          "id": "XlBa66LnrdIEo7Sl",
+          "name": "OpenRouter account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.output }}",
+        "contextWindowLength": 15
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1120,
+        -352
+      ],
+      "id": "dd9a6ca0-4a0d-475c-bad3-312b5c98b648",
+      "name": "Simple Memory5"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Process the following raw user input and convert it into structured data.\n\nRaw user input:\nExtract and normalize the following fields:\n\n1. product_name ({{ $json['name of product'] }})\n2. key_features ({{ $json['Key Features'] }})\n3. brand_tone ({{ $json['Tone of post'][0] }})\n4. target_platforms (default: linkedin, instagram, facebook)\n5. user_intent (one short sentence describing what the user wants to achieve)\n6. has_uploaded_image (true or false)\n7. image_reference ({{ $json.Image[0].filename }})\n8. approval_required (true)\n\nReturn JSON in exactly this structure:\n\n{\n  \"product_name\": \"\",\n  \"key_features\": [],\n  \"brand_tone\": \"\",\n  \"target_platforms\": [\"linkedin\", \"instagram\", \"facebook\"],\n  \"user_intent\": \"\",\n  \"has_uploaded_image\": false,\n  \"image_reference\": null,\n  \"approval_required\": true,\n  \"ready_for_brief_agent\": true\n}\n",
+        "options": {
+          "systemMessage": "You are the Main Orchestrator Agent in an AI-first marketing automation system.\n\nYour responsibility:\n- Accept raw user input.\n- Extract, normalize, and structure information for downstream agents.\n- Prepare clean, deterministic data.\n\nStrict rules:\n- Do NOT generate marketing copy.\n- Do NOT generate creative ideas.\n- Do NOT assume missing information.\n- If a value is missing or unclear, set it to null.\n- Output ONLY valid JSON.\n- Do not add explanations or commentary.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -560,
+        -272
+      ],
+      "id": "0e5f0291-882e-4ba6-ba06-0d24bf31e88d",
+      "name": "ORCHESTRATOR AGENT"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Create a structured campaign brief using the following inputs.\n\nProduct name:\n{{ $('On form submission').item.json['name of product'] }}\n\nKey features (array of strings):\n{{ $('On form submission').item.json['Key Features'] }}\n\nBrand tone:\n{{ $('On form submission').item.json['Tone of post'][0] }}\n\nImage path:\n{{ $('On form submission').item.json.Image[0].filename }}\n\nReturn JSON in exactly this structure:\n\n{\n  \"campaign_id\": \"auto-generate-a-uuid\",\n  \"product_name\": \"\",\n  \"features\": [],\n  \"brand_tone\": \"\",\n  \"target_platforms\": [\"linkedin\", \"instagram\", \"facebook\"],\n  \"image_path\": \"\",\n  \"objective\": \"Generate social media marketing creatives\",\n  \"constraints\": {\n    \"headline_max_words\": 5,\n    \"platform_tone_rules\": {\n      \"linkedin\": \"professional and concise\",\n      \"instagram\": \"engaging and expressive\",\n      \"facebook\": \"friendly and broad\"\n    }\n  }\n}\n",
+        "options": {
+          "systemMessage": "You are a Campaign Brief Agent in an AI-first marketing automation system.\n\nYour job is to convert raw user inputs into a structured campaign brief.\n\nStrict rules:\n- Do NOT generate marketing copy.\n- Do NOT make creative or design decisions.\n- Do NOT assume missing information.\n- If a value is missing, set it to null.\n- Output ONLY valid JSON.\n- Do not add explanations or comments.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -288,
+        -176
+      ],
+      "id": "c2d9e0e8-b254-4734-b345-f1bcc44164bc",
+      "name": "BRIEF AGENT"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Using the following campaign brief JSON, generate marketing copy.\n\nCampaign brief:\n{{ $json.output }}\n\nRequirements:\n- Generate exactly 3 headlines.\n- Each headline must be 5 words or fewer.\n- Generate exactly 2 captions per platform.\n\nReturn JSON in exactly this structure:\n\n{\n  \"headlines\": [\n    \"\",\n    \"\",\n    \"\"\n  ],\n  \"captions\": {\n    \"linkedin\": [\"\", \"\"],\n    \"instagram\": [\"\", \"\"],\n    \"facebook\": [\"\", \"\"]\n  }\n}\n",
+        "options": {
+          "systemMessage": "You are a Marketing Copy Agent.\n\nYour job is to generate marketing text only.\n\nRules:\n- Follow the campaign brief strictly.\n- Generate multiple options.\n- LinkedIn tone must be professional.\n- Instagram tone can be casual and expressive.\n- Facebook tone should be friendly.\n- No hashtags unless explicitly requested.\n- Output ONLY valid JSON.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        48,
+        -352
+      ],
+      "id": "aed9bfcc-496c-4b52-8f56-b80d983ec6f4",
+      "name": "MARKETING COPY AGENT"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Decide layout rules using the following inputs.\n\nCampaign brief:\n{{ $('BRIEF AGENT').item.json.output }}\n\nSelected headline:\n{{ $json.output.split(','[0])}}\nImage width:\n{{ $('On form submission').item.json.Image[0].size }}\n\nImage height:\n{{ $('On form submission').item.json.Image[0].size }}\nReturn JSON in exactly this structure:\n\n{\n  \"text_position\": \"top | center | bottom\",\n  \"font_size_ratio\": 0.06,\n  \"font_color\": \"white | black\",\n  \"background_strategy\": \"solid_box | gradient | shadow\",\n  \"padding_ratio\": 0.05,\n  \"safe_area\": {\n    \"top\": 0.1,\n    \"bottom\": 0.1,\n    \"left\": 0.05,\n    \"right\": 0.05\n  },\n  \"reasoning\": \"\"\n}\n",
+        "options": {
+          "systemMessage": "You are a Creative Layout Agent.\n\nYour job is to decide text placement and visual layout rules.\n\nRules:\n- Do NOT generate images.\n- Do NOT generate marketing copy.\n- Focus only on readability and layout safety.\n- Output ONLY valid JSON.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        336,
+        -608
+      ],
+      "id": "33c0c64a-4585-4043-bcb9-55bdcb1b11e0",
+      "name": "CREATIVE / LAYOUT AGENT"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Using the inputs below, define how final images should be created with text applied.\n\nCampaign brief:\n{{ $('BRIEF AGENT').item.json.output }}\n\nApproved Output:\n{{ $('MARKETING COPY AGENT').item.json.output }}\n\nLayout rules:\n{{ $('CREATIVE / LAYOUT AGENT').item.json.output }}\n\nSource image reference:\n{{ $('On form submission').item.json.Image[0].filename }}\n\nGenerate final image render instructions for each platform.\n\nReturn JSON in exactly this structure:\n\n{\n  \"rendered_creatives\": [\n    {\n      \"platform\": \"linkedin\",\n      \"width\": 1200,\n      \"height\": 627,\n      \"headline_text\": \"\",\n      \"caption_text\": \"\",\n      \"text_position\": \"top | center | bottom\",\n      \"font_size_ratio\": 0.06,\n      \"font_color\": \"white | black\",\n      \"background_strategy\": \"solid_box | gradient | shadow\",\n      \"padding_ratio\": 0.05,\n      \"safe_area\": {\n        \"top\": 0.1,\n        \"bottom\": 0.1,\n        \"left\": 0.05,\n        \"right\": 0.05\n      },\n      \"source_image\": \"\",\n      \"output_image_name\": \"\"\n    }\n  ]\n}\n",
+        "options": {
+          "systemMessage": "You are a Resize and Image Rendering Agent.\n\nYour responsibility:\n- Create platform-specific images.\n- Apply the approved headline text onto the image.\n- Follow layout rules strictly.\n- Ensure text is readable and not cut off.\n- Produce final render instructions per platform.\n\nRules:\n- Do NOT generate new marketing copy.\n- Use ONLY the provided headline and captions.\n- Do NOT invent design elements.\n- Output ONLY valid JSON.\n- Assume image rendering will be executed by downstream code or tools.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        720,
+        -288
+      ],
+      "id": "2df6db94-9703-45fb-be0d-66e6a8ef88e4",
+      "name": "RESIZE + IMAGE RENDER AGENT"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Publish the following campaign.\n\nCampaign ID:\n{{ $('BRIEF AGENT').item.json.output.split(campaign_id) }}\n\nCreatives:\n{{ $('MARKETING COPY AGENT').item.json.output }}\n\nPlatforms:\n{{ $json.output }}\n\nIf real posting is unavailable, simulate publishing.\n\nReturn JSON in exactly this structure:\n\n{\n  \"results\": [\n    {\n      \"platform\": \"\",\n      \"success\": true,\n      \"mode\": \"real | mock\",\n      \"post_url\": \"\",\n      \"message\": \"\"\n    }\n  ]\n}\n",
+        "options": {
+          "systemMessage": "You are a Publisher Agent.\n\nYour job is to publish marketing creatives or simulate publishing if APIs are unavailable.\n\nRules:\n- Never fail silently.\n- If real publishing is not possible, simulate it.\n- Always return publish status.\n- Output ONLY valid JSON.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        960,
+        -608
+      ],
+      "id": "36d1029d-3dd2-4e62-b5a0-357d9d8c48cc",
+      "name": "PUBLISHER AGENT"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.facebookGraphApi",
+      "typeVersion": 1,
+      "position": [
+        1440,
+        -736
+      ],
+      "id": "7b591c0f-d080-4c09-b0a8-b0810bf5e4e9",
+      "name": "Facebook "
+    },
+    {
+      "parameters": {
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.linkedIn",
+      "typeVersion": 1,
+      "position": [
+        1424,
+        -528
+      ],
+      "id": "441d7558-344b-47da-bd59-62dbaaaced20",
+      "name": "Linkedin"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.facebookGraphApi",
+      "typeVersion": 1,
+      "position": [
+        1424,
+        -304
+      ],
+      "id": "59f7fc74-f68c-4c68-8d58-063faeeb4f9c",
+      "name": "Instagram"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0A6RT8JE8Z",
+          "mode": "list",
+          "cachedResultName": "social-media-automation"
+        },
+        "text": "=Post published{{ $('PUBLISHER AGENT').item.json.output }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        1680,
+        -528
+      ],
+      "id": "8bb210fc-45ee-4168-bb87-45f763b72bb4",
+      "name": "Publish Update",
+      "webhookId": "6b4af938-5f5d-4190-b55e-74e5fa833ceb",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "urWjiGJbpvHq9rEU",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "sendAndWait",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0A6RT8JE8Z",
+          "mode": "list",
+          "cachedResultName": "social-media-automation"
+        },
+        "message": "={{ $('MARKETING COPY AGENT').item.json.output }}",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double"
+          }
+        },
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        656,
+        -592
+      ],
+      "id": "24006c97-dabe-413d-b0e6-b35f67ac6bf5",
+      "name": "Approval",
+      "webhookId": "378b8049-5409-48b4-b3df-dc20df4e0785",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "urWjiGJbpvHq9rEU",
+          "name": "Slack account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "ORCHESTRATOR AGENT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "ORCHESTRATOR AGENT",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SerpAPI": {
+      "ai_tool": [
+        [
+          {
+            "node": "ORCHESTRATOR AGENT",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "ORCHESTRATOR AGENT",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "BRIEF AGENT",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "BRIEF AGENT",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "MARKETING COPY AGENT",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory2": {
+      "ai_memory": [
+        [
+          {
+            "node": "MARKETING COPY AGENT",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "CREATIVE / LAYOUT AGENT",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory3": {
+      "ai_memory": [
+        [
+          {
+            "node": "CREATIVE / LAYOUT AGENT",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "RESIZE + IMAGE RENDER AGENT",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory4": {
+      "ai_memory": [
+        [
+          {
+            "node": "RESIZE + IMAGE RENDER AGENT",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "RESIZE + IMAGE RENDER AGENT",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "OpenRouter Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "PUBLISHER AGENT",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory5": {
+      "ai_memory": [
+        [
+          {
+            "node": "PUBLISHER AGENT",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ORCHESTRATOR AGENT": {
+      "main": [
+        [
+          {
+            "node": "BRIEF AGENT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BRIEF AGENT": {
+      "main": [
+        [
+          {
+            "node": "MARKETING COPY AGENT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MARKETING COPY AGENT": {
+      "main": [
+        [
+          {
+            "node": "CREATIVE / LAYOUT AGENT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CREATIVE / LAYOUT AGENT": {
+      "main": [
+        [
+          {
+            "node": "Approval",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RESIZE + IMAGE RENDER AGENT": {
+      "main": [
+        [
+          {
+            "node": "PUBLISHER AGENT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PUBLISHER AGENT": {
+      "main": [
+        [
+          {
+            "node": "Facebook ",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Linkedin",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Instagram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Facebook ": {
+      "main": [
+        [
+          {
+            "node": "Publish Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Linkedin": {
+      "main": [
+        [
+          {
+            "node": "Publish Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Instagram": {
+      "main": [
+        [
+          {
+            "node": "Publish Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approval": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "5fd3fc5a-8b02-4bd5-8044-b68c8bf88ff7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8079544a1296b4c7c7aa775fd3ab449d6b6cb191a579a693a61207d59de77679"
+  },
+  "id": "SnSSVvyi1eldDgQg",
+  "tags": []
+}
