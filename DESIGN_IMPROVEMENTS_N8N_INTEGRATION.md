@@ -100,8 +100,10 @@ No refactoring of core agents is required.
 
 ### 🔗 Related n8n Workflow (Improved Version)
 
-> **Link placeholder:**  
-> _Add link to improved Form-based n8n workflow here_
+> **Link : https://github.com/Disha-Gupta-892/AI_Marketing_Automation/blob/122d4472360cf70db2a05c3d35578b75343f29d4/n8n_form_workflow.json**  
+> Preview:
+> ![Image](https://github.com/Disha-Gupta-892/AI_Marketing_Automation/blob/122d4472360cf70db2a05c3d35578b75343f29d4/n8n_form.png
+)
 
 _(This workflow is under active development. Some publishing steps currently run in mock mode due to missing third-party API credentials. The design is production-ready and will be fully enabled once platform authentication and API access are available.)_
 
@@ -166,8 +168,10 @@ Response Payload to Frontend
 
 ### 🔗 Related n8n Workflow (Improved Version)
 
-> **Link placeholder:**
-> *Add link to improved Webhook-based n8n workflow here*
+> **Link : https://github.com/Disha-Gupta-892/AI_Marketing_Automation/blob/122d4472360cf70db2a05c3d35578b75343f29d4/n8n_webhook_workflow.json**
+> Preview :
+> ![Image](https://github.com/Disha-Gupta-892/AI_Marketing_Automation/blob/122d4472360cf70db2a05c3d35578b75343f29d4/n8n_webhook.png
+)
 
 *(This workflow is actively being refined. Certain live publishing steps require additional API keys and platform authentication (Facebook, LinkedIn, Instagram), which are not currently available. The orchestration logic, agent flow, and approval mechanisms are complete and will be extended once credentials are provided.)*
 
